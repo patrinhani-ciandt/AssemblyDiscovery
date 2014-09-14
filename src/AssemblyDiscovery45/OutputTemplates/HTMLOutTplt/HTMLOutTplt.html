@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="js/raphael-min.js"></script>
+    <script type="text/javascript" src="js/dracula_graffle.js"></script>
+    <script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="js/dracula_graph.js"></script>
+    <title></title>
+    <style>
+        .datagrid table {
+            border-collapse: collapse;
+            text-align: left;
+            width: 100%;
+        }
+
+        .datagrid {
+            font: normal 12px/150% Arial, Helvetica, sans-serif;
+            background: #fff;
+            overflow: hidden;
+            border: 1px solid #006699;
+            -webkit-border-radius: 3px;
+            -moz-border-radius: 3px;
+            border-radius: 3px;
+        }
+
+            .datagrid table td, .datagrid table th {
+                padding: 3px 10px;
+            }
+
+            .datagrid table thead th {
+                background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+                background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+                filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+                background-color: #006699;
+                color: #FFFFFF;
+                font-size: 15px;
+                font-weight: bold;
+                border-left: 1px solid #0070A8;
+            }
+
+                .datagrid table thead th:first-child {
+                    border: none;
+                }
+
+            .datagrid table tbody tr:nth-child(even) td {
+                color: #00557F;
+                border-left: 1px solid #E1EEF4;
+                font-size: 12px;
+                font-weight: normal;
+            }
+
+            .datagrid table tbody tr:nth-child(odd) td {
+                background: #E1EEf4;
+                color: #00557F;
+            }
+
+            .datagrid table tbody td:first-child {
+                border-left: none;
+            }
+
+            .datagrid table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+        .main-assembly-description {
+            padding: 4px;
+            margin: 0px 0px 10px 0px; 
+            background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+            background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+            background-color: #006699;
+            color: #FFFFFF;
+            font-size: 20px;
+            font-weight: bold;
+            border-left: 1px solid #0070A8;
+        }
+    </style>
+</head>
+<body>
+    <label>Analyzed Assembly</label>
+    <p class="main-assembly-description">{{analyzedAssembly}}</p>
+    <div class="datagrid">
+        <table>
+            <thead>
+                <tr>
+                    <th>Assembly</th>
+                    <th>References</th>
+                </tr>
+            </thead>
+            <tbody>
+<!--                <tr>
+                    <td>Ganesha.Web</td>
+                    <td>mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</td>
+                </tr>-->
+                {{tbodyContent}}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

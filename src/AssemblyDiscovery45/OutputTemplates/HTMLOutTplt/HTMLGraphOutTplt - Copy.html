@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="js/raphael-min.js"></script>
+    <script type="text/javascript" src="js/dracula_graffle.js"></script>
+    <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="js/dracula_graph.js"></script>
+    <title></title>
+    <style>
+        .main-assembly-description {
+            padding: 4px;
+            margin: 0px 0px 10px 0px; 
+            background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #006699), color-stop(1, #00557F) );
+            background: -moz-linear-gradient( center top, #006699 5%, #00557F 100% );
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#006699', endColorstr='#00557F');
+            background-color: #006699;
+            color: #FFFFFF;
+            font-size: 20px;
+            font-weight: bold;
+            border-left: 1px solid #0070A8;
+        }
+    </style>
+    <script language="javascript">
+
+        $(function () {
+            var width = $(document).width() - 20;
+            var height = $(document).height() - 60;
+
+            var optLink = { directed: true };
+
+            var graph = new Graph();
+
+            /*{{javascriptArea}}*/
+
+            var layouter = new Graph.Layout.Ordered(graph);
+            layouter.layout();
+
+            var renderer = new Graph.Renderer.Raphael('canvas', graph, width, height);
+            renderer.draw();
+        });
+
+    </script>
+</head>
+<body>
+    <label>Analyzed Assembly</label>
+    <p class="main-assembly-description">{{analyzedAssembly}}</p>
+    <div id="canvas"></div>
+</body>
+</html>

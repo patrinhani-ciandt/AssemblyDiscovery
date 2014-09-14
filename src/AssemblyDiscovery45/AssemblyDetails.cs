@@ -15,7 +15,7 @@ namespace AssemblyDiscovery
     {
         #region Variáveis
 
-        private Assembly assemblyDetailed = null;
+        private AssemblyDiscoveryService discoveryService = null;
 
         #endregion
 
@@ -24,6 +24,8 @@ namespace AssemblyDiscovery
         public AssemblyDetails()
         {
             InitializeComponent();
+
+            discoveryService = new AssemblyDiscoveryService();
         }
 
         #endregion
@@ -40,21 +42,9 @@ namespace AssemblyDiscovery
         {
             this.clearDetails();
 
-            if (this.assemblyDetailed != null)
-            {
-                this.obterAssemblyDetail();
+            this.obterAssemblyDetail();
 
-                if (!this.checkBoxRecursiveView.Checked)
-                {
-                    this.obterReferencedAssemblies();
-                }
-                else
-                {
-                    this.obterReferencedAssembliesRecursive(null);
-
-                    this.dataGridViewReferencedAssemblies.Sort(this.assemblyNameDataGridViewTextBoxColumn, ListSortDirection.Ascending);
-                }
-            }
+            this.obterReferencedAssemblies(this.checkBoxRecursiveView.Checked);
         }
 
         private void copySelectedAssembliesTo(string destPath)
@@ -65,19 +55,19 @@ namespace AssemblyDiscovery
                 {
                     DataGridViewRow rowGrid = dataGridViewReferencedAssemblies.Rows[itemCell.RowIndex];
 
-                    object objAssembly = rowGrid.Cells["AssemblyObject"].Value;
+                    var objAssembly = (rowGrid.Cells["AssemblyObject"].Value as AssemblyTO);
 
-                    if (objAssembly is Assembly)
+                    if (objAssembly != null)
                     {
-                        File.Copy((objAssembly as Assembly).Location, Path.Combine(destPath, Path.GetFileName((objAssembly as Assembly).Location)), true);
+                        File.Copy(objAssembly.Location, Path.Combine(destPath, Path.GetFileName(objAssembly.Location)), true);
                     }
                 }
             }
         }
 
-        public void SetAssembly(Assembly assembly)
+        public void SetAssembly(string assemblyPath)
         {
-            this.assemblyDetailed = assembly;
+            discoveryService.LoadAssembly(assemblyPath);
 
             this.refreshDetails();
         }
@@ -88,41 +78,42 @@ namespace AssemblyDiscovery
         {
             DataRow row = this.dataTableAssemblyDetail.NewRow();
 
-            row["AssemblyName"] = this.assemblyDetailed.GetName().Name;
-            row["AssemblyFullName"] = this.assemblyDetailed.GetName().FullName;
-            row["AssemblyVersion"] = this.assemblyDetailed.GetName().Version.ToString();
-            row["AssemblyRuntimeVersion"] = this.assemblyDetailed.ImageRuntimeVersion;
+            var assemblyDetailed = discoveryService.GetAssemblyDetail();
+
+            row["AssemblyName"] = assemblyDetailed.Name;
+            row["AssemblyFullName"] = assemblyDetailed.FullName;
+            row["AssemblyVersion"] = assemblyDetailed.AssemblyVersion.ToString();
+            row["AssemblyRuntimeVersion"] = assemblyDetailed.RuntimeVersion;
 
             this.dataTableAssemblyDetail.Rows.Add(row);
         }
 
-        private void obterReferencedAssemblies()
+        private void obterReferencedAssemblies(bool recursive)
         {
-            foreach (AssemblyName assName in this.assemblyDetailed.GetReferencedAssemblies())
+            var assemblyDetailed = discoveryService.GetAssemblyDetail(true, recursive);
+
+            List<string> addedAssemblies = new List<string>();
+
+            foreach (var assemblyDto in assemblyDetailed.ReferencedAssemblies)
             {
+                if (addedAssemblies.Contains(assemblyDto.FullName)) continue;
+
                 DataRow row = this.dataTableReferencedAssemblies.NewRow();
 
-                row["AssemblyName"] = assName.Name;
-                row["AssemblyVersion"] = assName.Version.ToString();
-                row["AssemblyRuntimeVersion"] = assName.GetType().Assembly.ImageRuntimeVersion;
-                row["AssemblyVersionCompatibility"] = assName.VersionCompatibility.ToString();
-                row["AssemblyFullName"] = assName.FullName;
-                row["ParentAssemblyObject"] = this.assemblyDetailed;
+                row["AssemblyName"] = assemblyDto.Name;
+                row["AssemblyVersion"] = assemblyDto.AssemblyVersion.ToString();
+                row["AssemblyRuntimeVersion"] = assemblyDto.GetType().Assembly.ImageRuntimeVersion;
+                row["AssemblyVersionCompatibility"] = assemblyDto.VersionCompatibility.ToString();
+                row["AssemblyFullName"] = assemblyDto.FullName;
+                row["ParentAssemblyObject"] = assemblyDetailed;
+                row["AssemblyObject"] = assemblyDto;
+                row["hasInGAC"] = assemblyDto.HasInGAC;
+                row["loadError"] = assemblyDto.LoadError;
+                row["loadErrorDescription"] = assemblyDto.LoadErrorDescription;
 
-                try
+                if (!addedAssemblies.Contains(assemblyDto.FullName))
                 {
-                    Assembly rowAssembly = Assembly.Load(assName);
-
-                    row["AssemblyObject"] = rowAssembly;
-                    row["hasInGAC"] = rowAssembly.GlobalAssemblyCache;
-                }
-                catch (Exception ex)
-                {
-                    while (ex.InnerException != null)
-                        ex = ex.InnerException;
-
-                    row["loadError"] = true;
-                    row["loadErrorDescription"] = ex.Message;
+                    addedAssemblies.Add(assemblyDto.FullName);
                 }
 
                 this.dataTableReferencedAssemblies.Rows.Add(row);
@@ -131,107 +122,6 @@ namespace AssemblyDiscovery
             this.dataGridViewReferencedAssemblies.Sort(this.assemblyNameDataGridViewTextBoxColumn, ListSortDirection.Ascending);
         }
 
-        private void obterReferencedAssembliesRecursive(AssemblyName assName)
-        {
-            if (assName != null)
-            {
-                Assembly actualAssembly = null;
-
-                try
-                {
-                    actualAssembly = Assembly.Load(assName);
-                }
-                catch (Exception) { }
-
-                if (actualAssembly != null)
-                {
-                    foreach (AssemblyName childAssName in actualAssembly.GetReferencedAssemblies())
-                    {
-                        int existsAdded = 0;
-
-                        existsAdded =
-                            (from a in this.dataTableReferencedAssemblies.AsEnumerable()
-                             where a.Field<String>("AssemblyFullName").ToLower().Trim().Equals(childAssName.FullName.ToLower().Trim())
-                             select a).Count();
-
-                        if (existsAdded <= 0)
-                        {
-                            DataRow row = this.dataTableReferencedAssemblies.NewRow();
-
-                            row["AssemblyName"] = childAssName.Name;
-                            row["AssemblyVersion"] = childAssName.Version.ToString();
-                            row["AssemblyRuntimeVersion"] = childAssName.GetType().Assembly.ImageRuntimeVersion;
-                            row["AssemblyVersionCompatibility"] = childAssName.VersionCompatibility.ToString();
-                            row["AssemblyFullName"] = childAssName.FullName;
-                            row["ParentAssemblyObject"] = actualAssembly;
-
-                            try
-                            {
-                                Assembly rowAssembly = Assembly.Load(childAssName);
-
-                                row["AssemblyObject"] = rowAssembly;
-                                row["hasInGAC"] = rowAssembly.GlobalAssemblyCache;
-                            }
-                            catch (Exception ex)
-                            {
-                                while (ex.InnerException != null)
-                                    ex = ex.InnerException;
-
-                                row["loadError"] = true;
-                                row["loadErrorDescription"] = ex.Message;
-                            }
-
-                            this.dataTableReferencedAssemblies.Rows.Add(row);
-
-                            obterReferencedAssembliesRecursive(childAssName);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (AssemblyName childAssName in this.assemblyDetailed.GetReferencedAssemblies())
-                {
-                    int existsAdded = 0;
-
-                    existsAdded =
-                        (from a in this.dataTableReferencedAssemblies.AsEnumerable()
-                         where a.Field<String>("AssemblyFullName").ToLower().Trim().Equals(childAssName.FullName.ToLower().Trim())
-                         select a).Count();
-
-                    if (existsAdded <= 0)
-                    {
-                        DataRow row = this.dataTableReferencedAssemblies.NewRow();
-
-                        row["AssemblyName"] = childAssName.Name;
-                        row["AssemblyVersion"] = childAssName.Version.ToString();
-                        row["AssemblyRuntimeVersion"] = childAssName.GetType().Assembly.ImageRuntimeVersion;
-                        row["AssemblyVersionCompatibility"] = childAssName.VersionCompatibility.ToString();
-                        row["AssemblyFullName"] = childAssName.FullName;
-
-                        try
-                        {
-                            Assembly rowAssembly = Assembly.Load(childAssName);
-
-                            row["AssemblyObject"] = rowAssembly;
-                            row["hasInGAC"] = rowAssembly.GlobalAssemblyCache;
-                        }
-                        catch (Exception ex)
-                        {
-                            while (ex.InnerException != null)
-                                ex = ex.InnerException;
-
-                            row["loadError"] = true;
-                            row["loadErrorDescription"] = ex.Message;
-                        }
-
-                        this.dataTableReferencedAssemblies.Rows.Add(row);
-
-                        obterReferencedAssembliesRecursive(childAssName);
-                    }
-                }
-            }
-        }
         #endregion
 
         #endregion
@@ -251,7 +141,7 @@ namespace AssemblyDiscovery
                     {
                         if (row["AssemblyObject"] != DBNull.Value)
                         {
-                            FormAssemblyDetail.Show((Assembly)row["AssemblyObject"]);
+                            FormAssemblyDetail.Show(row["AssemblyObject"] as AssemblyTO);
                         }
                     }
                 }
@@ -265,16 +155,7 @@ namespace AssemblyDiscovery
             this.dataTableReferencedAssemblies.Clear();
             this.dataTableReferencedAssemblies.AcceptChanges();
 
-            if (!this.checkBoxRecursiveView.Checked)
-            {
-                this.obterReferencedAssemblies();
-            }
-            else
-            {
-                this.obterReferencedAssembliesRecursive(null);
-
-                this.dataGridViewReferencedAssemblies.Sort(this.assemblyNameDataGridViewTextBoxColumn, ListSortDirection.Ascending);
-            }
+            this.obterReferencedAssemblies(this.checkBoxRecursiveView.Checked);
 
             this.dataTableReferencedAssemblies.AcceptChanges();
 
@@ -320,7 +201,7 @@ namespace AssemblyDiscovery
                 {
                     if (row["ParentAssemblyObject"] != DBNull.Value)
                     {
-                        FormAssemblyDetail.Show((Assembly)row["ParentAssemblyObject"]);
+                        FormAssemblyDetail.Show(row["ParentAssemblyObject"] as AssemblyTO);
                     }
                 }
             }
