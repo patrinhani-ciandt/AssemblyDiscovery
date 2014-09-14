@@ -13,21 +13,21 @@ namespace AssemblyDiscovery
 {
     public partial class FormPrincipal : Form
     {
-        private string strInitialFile = "";
+        private static string initialAssemblyFile = "";
+
+        public static string InitialAssemblyFile
+        {
+            get { return initialAssemblyFile; }
+            set { initialAssemblyFile = value; }
+        }
 
         #region Construtores e Inicializadores
 
-        public FormPrincipal(string[] args)
+        public FormPrincipal(string inputAssembly)
         {
             InitializeComponent();
 
-            if (args.Length > 0)
-            {
-                if (File.Exists(args[0]))
-                {
-                    this.strInitialFile = args[0]; 
-                }
-            }
+            InitialAssemblyFile = inputAssembly;
         }
 
         #endregion
@@ -36,9 +36,9 @@ namespace AssemblyDiscovery
 
         private void initialize()
         {
-            if (this.strInitialFile.Length != 0)
+            if (!String.IsNullOrWhiteSpace(InitialAssemblyFile))
             {
-                this.textBoxAssemblySelecionado.Text = this.strInitialFile;
+                this.textBoxAssemblySelecionado.Text = InitialAssemblyFile;
             }
         }
 
@@ -55,31 +55,15 @@ namespace AssemblyDiscovery
 
         private void textBoxAssemblySelecionado_TextChanged(object sender, EventArgs e)
         {
-            this.assemblyDetailsPrincipal.SetAssembly(null);
-
             if (this.textBoxAssemblySelecionado.Text.Trim().Length > 0)
             {
                 string fileName = this.textBoxAssemblySelecionado.Text.Trim();
 
                 if (File.Exists(fileName))
                 {
-                    Assembly asmbly = null;
+                    InitialAssemblyFile = fileName;
 
-                    try
-                    {
-                        asmbly = Assembly.LoadFrom(fileName);
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("O arquivo selecionado não é um arquivo Assembly válido.");
-
-                        this.textBoxAssemblySelecionado.Text = String.Empty;
-                    }
-
-                    if (asmbly != null)
-                    {
-                        this.assemblyDetailsPrincipal.SetAssembly(asmbly);
-                    }
+                    this.assemblyDetailsPrincipal.SetAssembly(InitialAssemblyFile);
                 }
             }
         }

@@ -11,15 +11,15 @@ namespace AssemblyDiscovery
 {
     public partial class FormAssemblyDetail : Form
     {
-        #region Variavveis
-	
-        private Assembly formAssembly = null;
-	 
-    	#endregion
+        #region Variaveis
+
+        private AssemblyTO formAssembly;
+
+        #endregion
 
         #region Construtores e Inicializadores
 
-        public FormAssemblyDetail(Assembly assembly)
+        public FormAssemblyDetail(AssemblyTO assembly)
         {
             InitializeComponent();
 
@@ -30,7 +30,7 @@ namespace AssemblyDiscovery
 
         #region Métodos Estaticos
 
-        public static new void Show(Assembly assembly)
+        public static new void Show(AssemblyTO assembly)
         {
             FormAssemblyDetail form = new FormAssemblyDetail(assembly);
 
@@ -41,7 +41,7 @@ namespace AssemblyDiscovery
 
         private void FormAssemblyDetail_Load(object sender, EventArgs e)
         {
-            this.assemblyDetails1.SetAssembly(this.formAssembly);
+            this.assemblyDetails1.SetAssembly(this.formAssembly.Location);
         }
     }
 }
