@@ -16,6 +16,8 @@ namespace AssemblyDiscovery
 
         #region Properties
 
+        public Guid ObjectId { get; private set; }
+
         public string Name { get; set; }
 
         public string FullName { get; set; }
@@ -48,6 +50,7 @@ namespace AssemblyDiscovery
 
         public AssemblyTO()
         {
+            ObjectId = Guid.NewGuid();
             referencedAssemblies = new List<AssemblyTO>();
         }
 

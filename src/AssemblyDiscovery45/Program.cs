@@ -6,9 +6,18 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using AssemblyDiscovery.OutputTemplates;
+using AssemblyDiscovery.Extensions;
+using System.Xml.Linq;
+using AssemblyDiscovery.Services;
 
 namespace AssemblyDiscovery
 {
+    enum ExitCodes : int
+    {
+        Success = 0,
+        AssemblyIsInvalid = 1
+    }
+
     static class Program
     {
         #region Constants
@@ -26,9 +35,15 @@ namespace AssemblyDiscovery
         [STAThread]
         static void Main(string[] args)
         {
+            createTestAssemblyValidator();
+
             if (hasArgument(args, "o"))
             {
                 processExportReportArgument(args);
+            }
+            else if (hasArgument(args, "v"))
+            {
+                processValidationArgument(args);
             }
             else
             {
@@ -36,6 +51,34 @@ namespace AssemblyDiscovery
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new FormPrincipal(getInputAssemblyArgument(args)));
             }
+        }
+
+        private static void createTestAssemblyValidator()
+        {
+            string testAssemblyValidatorPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "AssemblyValidations.xml");
+
+            var validator = new AssemblyValidator();
+
+            validator.ValidatorDefinitions.WithReferences(
+                new ValidatorDefinitionReference
+                {
+                    AssemblyName = "Ganesha.AfterFlow.*",
+                    Allowed = false,
+                    Version = "*",
+                    ErrorType = ValidatorDefinitionReferenceErrorType.Error
+                },
+                new ValidatorDefinitionReference
+                {
+                    AssemblyName = "NHibernate",
+                    Allowed = true,
+                    Version = "=3.1.0.*",
+                    ErrorType = ValidatorDefinitionReferenceErrorType.Error
+                }
+            );
+
+            //var xDoc = XDocument.Load(validator.ToXml(Encoding.UTF8).ToStream());
+
+            //xDoc.Save(testAssemblyValidatorPath, SaveOptions.None);
         }
 
         private static void exportAssemblyDiscoveryReport(string[] args, string inputAssembly, string outPath, string outputArgParam)
@@ -249,7 +292,7 @@ namespace AssemblyDiscovery
         {
             string inputAssembly = getInputAssemblyArgument(args);
 
-            if ((String.IsNullOrWhiteSpace(inputAssembly)) && (File.Exists(inputAssembly)))
+            if ((string.IsNullOrWhiteSpace(inputAssembly)) && (File.Exists(inputAssembly)))
                 throw new ArgumentNullException("Input Assembly", "You need to set a valid Input Assembly to be analyzed as the fisrt argument.");
 
             string outputArgument = args.Where(a => getValidInputsForOperatorArgument(a, "o")).FirstOrDefault();
@@ -268,6 +311,43 @@ namespace AssemblyDiscovery
                 string outputPath = list.Skip(indexOfOutputArgument + 1).Take(1).FirstOrDefault();
 
                 exportAssemblyDiscoveryReport(args, inputAssembly, outputPath, outputArgParam);
+            }
+        }
+
+        private static void processValidationArgument(string[] args)
+        {
+            string inputAssembly = getInputAssemblyArgument(args);
+
+            if ((string.IsNullOrWhiteSpace(inputAssembly)) && (File.Exists(inputAssembly)))
+                throw new ArgumentNullException("Input Assembly", "You need to set a valid Input Assembly to be analyzed as the fisrt argument.");
+
+            string validationArgument = args.Where(a => getValidInputsForOperatorArgument(a, "v")).FirstOrDefault();
+
+            if (!String.IsNullOrWhiteSpace(validationArgument))
+            {
+                var list = new List<string>(args.Distinct().ToArray());
+
+                int indexOfOutputArgument = list.IndexOf(validationArgument);
+
+                string inputValidationDefinition = list.Skip(indexOfOutputArgument + 1).Take(1).FirstOrDefault();
+
+                validateAssembly(args, inputAssembly, inputValidationDefinition);
+            }
+        }
+
+        private static void validateAssembly(string[] args, string inputAssembly, string inputValidationDefinition)
+        {
+            var discoveryService = new AssemblyDiscoveryService(inputAssembly);
+
+            var validationService = new AssemblyValidationService(discoveryService);
+
+            validationService.LoadAssemblyValidatorFromXmlFile(inputValidationDefinition);
+
+            var validationResultSummary = validationService.Validate();
+
+            if (validationResultSummary.HasErrors())
+            {
+                Environment.Exit((int)ExitCodes.AssemblyIsInvalid);
             }
         }
 

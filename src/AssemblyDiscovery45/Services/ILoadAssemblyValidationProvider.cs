@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AssemblyDiscovery
+namespace AssemblyDiscovery.Services
 {
-    public class AssemblyValidationService
+    public interface ILoadAssemblyValidationProvider
     {
-        #region Constructors
-
-        #endregion
+        AssemblyValidator LoadValidator();
     }
 }
