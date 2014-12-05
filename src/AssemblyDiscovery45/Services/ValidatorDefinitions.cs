@@ -51,8 +51,7 @@ namespace AssemblyDiscovery.Services
 
         public void ValidateReferences(IEnumerable<AssemblyTO> assemblies)
         {
-            foreach (var item in assemblies)
-            //foreach (var item in assemblies.AsParallel())
+            foreach (var item in assemblies.AsParallel())
             {
                 validateReference(item);
             }
@@ -60,8 +59,7 @@ namespace AssemblyDiscovery.Services
 
         private void validateReference(AssemblyTO assembly)
         {
-            foreach (var item in References)
-            //foreach (var item in References.AsParallel())
+            foreach (var item in References.AsParallel())
             {
                 var isValid = item.IsValid(assembly);
 

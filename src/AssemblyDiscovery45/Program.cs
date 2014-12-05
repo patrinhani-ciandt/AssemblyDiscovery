@@ -35,8 +35,6 @@ namespace AssemblyDiscovery
         [STAThread]
         static void Main(string[] args)
         {
-            createTestAssemblyValidator();
-
             if (hasArgument(args, "o"))
             {
                 processExportReportArgument(args);
@@ -45,40 +43,16 @@ namespace AssemblyDiscovery
             {
                 processValidationArgument(args);
             }
+            else if (hasArgument(args, "rve"))
+            {
+                processReferenceValidationExportArgument(args);
+            }
             else
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new FormPrincipal(getInputAssemblyArgument(args)));
             }
-        }
-
-        private static void createTestAssemblyValidator()
-        {
-            string testAssemblyValidatorPath = Path.Combine(AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "AssemblyValidations.xml");
-
-            var validator = new AssemblyValidator();
-
-            validator.ValidatorDefinitions.WithReferences(
-                new ValidatorDefinitionReference
-                {
-                    AssemblyName = "Ganesha.AfterFlow.*",
-                    Allowed = false,
-                    Version = "*",
-                    ErrorType = ValidatorDefinitionReferenceErrorType.Error
-                },
-                new ValidatorDefinitionReference
-                {
-                    AssemblyName = "NHibernate",
-                    Allowed = true,
-                    Version = "=3.1.0.*",
-                    ErrorType = ValidatorDefinitionReferenceErrorType.Error
-                }
-            );
-
-            //var xDoc = XDocument.Load(validator.ToXml(Encoding.UTF8).ToStream());
-
-            //xDoc.Save(testAssemblyValidatorPath, SaveOptions.None);
         }
 
         private static void exportAssemblyDiscoveryReport(string[] args, string inputAssembly, string outPath, string outputArgParam)
@@ -348,6 +322,50 @@ namespace AssemblyDiscovery
             if (validationResultSummary.HasErrors())
             {
                 Environment.Exit((int)ExitCodes.AssemblyIsInvalid);
+            }
+        }
+
+        private static void referenceValidationExport(string[] args, string inputAssembly, string outputValidationDefinition)
+        {
+            var discoveryService = new AssemblyDiscoveryService(inputAssembly);
+
+            var assemblyDetail = discoveryService.GetAssemblyDetail(true, false);
+
+            var validator = new AssemblyValidator();
+
+            validator.ValidatorDefinitions.WithReferences(
+                assemblyDetail.ReferencedAssemblies.Select(x => new ValidatorDefinitionReference
+                {
+                    Allowed = true,
+                    AssemblyName = x.Name,
+                    Version = x.AssemblyVersion.ToString(),
+                    ErrorType = ValidatorDefinitionReferenceErrorType.Error
+                }).ToArray()
+            );
+
+            var xDoc = XDocument.Load(validator.ToXml(Encoding.UTF8).ToStream());
+
+            xDoc.Save(outputValidationDefinition, SaveOptions.None);
+        }
+
+        private static void processReferenceValidationExportArgument(string[] args)
+        {
+            string inputAssembly = getInputAssemblyArgument(args);
+
+            if ((string.IsNullOrWhiteSpace(inputAssembly)) && (File.Exists(inputAssembly)))
+                throw new ArgumentNullException("Input Assembly", "You need to set a valid Input Assembly to be analyzed as the fisrt argument.");
+
+            string validationArgument = args.Where(a => getValidInputsForOperatorArgument(a, "rve")).FirstOrDefault();
+
+            if (!String.IsNullOrWhiteSpace(validationArgument))
+            {
+                var list = new List<string>(args.Distinct().ToArray());
+
+                int indexOfOutputArgument = list.IndexOf(validationArgument);
+
+                string outputValidationDefinition = list.Skip(indexOfOutputArgument + 1).Take(1).FirstOrDefault();
+
+                referenceValidationExport(args, inputAssembly, outputValidationDefinition);
             }
         }
 
