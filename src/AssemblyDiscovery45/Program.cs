@@ -315,14 +315,54 @@ namespace AssemblyDiscovery
 
             var validationService = new AssemblyValidationService(discoveryService);
 
+            inputValidationDefinition = inputValidationDefinition.Replace("*", Path.GetFileNameWithoutExtension(inputAssembly));
+
             validationService.LoadAssemblyValidatorFromXmlFile(inputValidationDefinition);
 
             var validationResultSummary = validationService.Validate();
 
+            Console.WriteLine("Assembly Reference Validation Results for '{0}':", discoveryService.GetAssemblyDetail(false, false).FullName);
+            Console.WriteLine("Assembly Input Validation File: {0}", Path.GetFileName(inputValidationDefinition));
+            Console.WriteLine();
+
+            if ((validationResultSummary.HasWarnings()) || (validationResultSummary.HasErrors()))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                foreach (var error in validationResultSummary.Errors)
+                {
+                    Console.WriteLine("[  ERROR  ] - {0}", error.FullName);
+                }
+
+                Console.ResetColor();
+                Console.WriteLine();
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                foreach (var warning in validationResultSummary.Warnings)
+                {
+                    Console.WriteLine("[ WARNING ] - {0}", warning.FullName);
+                }
+
+                Console.ResetColor();
+                Console.WriteLine();
+
+                Console.WriteLine("Errors: {0}, Warnings: {1}", validationResultSummary.Errors.Count(), validationResultSummary.Warnings.Count());
+                Console.WriteLine();
+            }
+
             if (validationResultSummary.HasErrors())
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Were found validation Errors !!!");
+
                 Environment.Exit((int)ExitCodes.AssemblyIsInvalid);
             }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("No Errors found!!!");
+            }
+
+            Console.WriteLine();
         }
 
         private static void referenceValidationExport(string[] args, string inputAssembly, string outputValidationDefinition)
