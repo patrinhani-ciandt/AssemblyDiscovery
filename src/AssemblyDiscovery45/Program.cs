@@ -385,6 +385,8 @@ namespace AssemblyDiscovery
 
             var xDoc = XDocument.Load(validator.ToXml(Encoding.UTF8).ToStream());
 
+            outputValidationDefinition = outputValidationDefinition.Replace("*", Path.GetFileNameWithoutExtension(inputAssembly));
+
             xDoc.Save(outputValidationDefinition, SaveOptions.None);
         }
 
