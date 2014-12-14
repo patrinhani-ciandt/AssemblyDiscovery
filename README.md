@@ -29,7 +29,7 @@ SampleProject.ConsoleApp-val.xml
     &lt;References&gt;
 	  &lt;!--  Version Less Than or Equal 3.0.0.0 --&gt;
       &lt;ValidatorDefinitionReference AssemblyName=&quot;mscorlib&quot; Version=&quot;%=3.0.0.0&quot; Allowed=&quot;false&quot; ErrorType=&quot;Warning&quot; /&gt;
-	  &lt;!--  Version Greater Than or Equal 3.0.0.0 --&gt;
+	  &lt;!--  Version Greater Than or Equal 1.2.13.0 --&gt;
       &lt;ValidatorDefinitionReference AssemblyName=&quot;log4net&quot; Version=&quot;=%1.2.13.0&quot; Required=&quot;true&quot; ErrorType=&quot;Error&quot; /&gt;
       &lt;ValidatorDefinitionReference AssemblyName=&quot;NHibernate&quot; Version=&quot;3.0.*.0&quot; Allowed=&quot;true&quot; ErrorType=&quot;Error&quot; /&gt;
       &lt;ValidatorDefinitionReference AssemblyName=&quot;System.Web&quot; Version=&quot;*&quot; Allowed=&quot;false&quot; ErrorType=&quot;Error&quot; /&gt;
