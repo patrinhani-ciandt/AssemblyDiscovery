@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>AssemblyDiscovery</id>
+        <version>1.0.0.0</version>
+        <title>AssemblyDiscovery</title>
+        <authors>CI&amp;T</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>AssemblyDiscovery</description>
+    </metadata>
+    <files>
+        <file src="..\..\src\AssemblyDiscovery45\bin\Release\AssemblyDiscovery45.exe" target="tools\AssemblyDiscovery45.exe" />
+    </files>
+</package>

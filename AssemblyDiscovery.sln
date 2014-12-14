@@ -1,9 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30324.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyDiscovery45", "src\AssemblyDiscovery45\AssemblyDiscovery45.csproj", "{2AC98623-2FB3-443F-87B4-685276E90E10}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1F10A195-5213-41F9-8EA6-D81640A97F56}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{886374D2-2D55-4C2B-84CF-D308D03BBB8B}"
+	ProjectSection(SolutionItems) = preProject
+		AssemblyDiscovery.msbuild = AssemblyDiscovery.msbuild
+		Build\NuspecFiles\AssemblyDiscovery.nuspec = Build\NuspecFiles\AssemblyDiscovery.nuspec
+		AssemblyDiscovery.targets = AssemblyDiscovery.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
