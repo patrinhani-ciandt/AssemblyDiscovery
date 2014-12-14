@@ -7,9 +7,6 @@ NuGet Feed: https://www.myget.org/F/bohriumnet/
 
 <h1>Usage Examples</h1>
 
-<h3>Command Line Syntax</h3>
-/>AssemblyDiscovery45.exe ["AssemblyPath.(dll|exe)"] ([-r{for recursive reference map}] [-o[:(txt|html)] "outputFilename.(txt|html)"]|[-v "inputValidationFilename.xml"]|[-rve "referecencesValidationFileTemplateOutput.xml"])
-
 <h2>Report Generator</h2>
 <h3>Command Line Examples</h3>
 />AssemblyDiscovery45.exe "SampleProject.ConsoleApp.exe" -r -o:html "SampleProject.ConsoleApp-rep.html"
