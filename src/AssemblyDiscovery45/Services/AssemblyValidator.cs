@@ -23,8 +23,9 @@ namespace AssemblyDiscovery.Services
 
             var validationSummary = new AssemblyValidationResultSummary();
 
-            validationSummary.Errors = assemblyTO.ReferencedAssemblies.Where(a => ValidatorDefinitions.ErrorReferences.Contains(a.ObjectId)).ToList();
-            validationSummary.Warnings = assemblyTO.ReferencedAssemblies.Where(a => ValidatorDefinitions.WarningReferences.Contains(a.ObjectId)).ToList();
+            validationSummary.NotFound = ValidatorDefinitions.ErrorReferences.Where(a => a.ObjectId == Guid.Empty).ToList();
+            validationSummary.Errors = ValidatorDefinitions.ErrorReferences.Where(a => a.ObjectId != Guid.Empty).ToList();
+            validationSummary.Warnings = ValidatorDefinitions.WarningReferences.Where(a => a.ObjectId != Guid.Empty).ToList();
 
             return validationSummary;
         }

@@ -22,8 +22,8 @@ namespace AssemblyDiscovery
     {
         #region Constants
 
-        private const string regexForValidArgumentOperator = @"([/-](?<opr_name>\w+)([:](?<opr_param>\w+))?)";
-        private const string regexFormatForSpecificOperatorName = @"([/-](?<opr_name>{0})([:](?<opr_param>\w+))?)";
+        private const string regexForValidArgumentOperator = @"^([/-](?<opr_name>\w+)([:](?<opr_param>\w+))?)$";
+        private const string regexFormatForSpecificOperatorName = @"^([/-](?<opr_name>{0})([:](?<opr_param>\w+))?)$";
 
         #endregion
 
@@ -249,7 +249,7 @@ namespace AssemblyDiscovery
 
         private static bool getValidInputsForOperatorArgument(string argument, string argOperator)
         {
-            return Regex.IsMatch(argument, String.Format(regexFormatForSpecificOperatorName, argOperator));
+            return Regex.IsMatch(argument, string.Format(regexFormatForSpecificOperatorName, argOperator));
         }
 
         private static bool hasArgument(string[] args, string argument)
@@ -278,11 +278,11 @@ namespace AssemblyDiscovery
                 if (String.IsNullOrWhiteSpace(outputArgParam))
                     outputArgParam = "txt";
 
-                var list = new List<string>(args.Where(a => !getValidInputsForOperatorArgument(a, "r")).Distinct().ToArray());
+                var list = new List<string>(args.Distinct().ToArray());
 
                 int indexOfOutputArgument = list.IndexOf(outputArgument);
 
-                string outputPath = list.Skip(indexOfOutputArgument + 1).Take(1).FirstOrDefault();
+                string outputPath = list.Skip(indexOfOutputArgument +1).Take(1).FirstOrDefault();
 
                 exportAssemblyDiscoveryReport(args, inputAssembly, outputPath, outputArgParam);
             }
@@ -325,12 +325,21 @@ namespace AssemblyDiscovery
             Console.WriteLine("Assembly Input Validation File: {0}", Path.GetFileName(inputValidationDefinition));
             Console.WriteLine();
 
-            if ((validationResultSummary.HasWarnings()) || (validationResultSummary.HasErrors()))
+            if ((validationResultSummary.HasWarnings()) || (validationResultSummary.HasErrors()) || (validationResultSummary.HasNotFound()))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 foreach (var error in validationResultSummary.Errors)
                 {
                     Console.WriteLine("[  ERROR  ] - {0}", error.FullName);
+                }
+
+                Console.ResetColor();
+                Console.WriteLine();
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                foreach (var error in validationResultSummary.NotFound)
+                {
+                    Console.WriteLine("[NOT FOUND] - {0}", error.FullName);
                 }
 
                 Console.ResetColor();
@@ -345,11 +354,11 @@ namespace AssemblyDiscovery
                 Console.ResetColor();
                 Console.WriteLine();
 
-                Console.WriteLine("Errors: {0}, Warnings: {1}", validationResultSummary.Errors.Count(), validationResultSummary.Warnings.Count());
+                Console.WriteLine("Errors: {0}, Not Found: {1}, Warnings: {2}", validationResultSummary.Errors.Count(), validationResultSummary.NotFound.Count(), validationResultSummary.Warnings.Count());
                 Console.WriteLine();
             }
 
-            if (validationResultSummary.HasErrors())
+            if ((validationResultSummary.HasErrors()) || (validationResultSummary.HasNotFound()))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Were found validation Errors !!!");

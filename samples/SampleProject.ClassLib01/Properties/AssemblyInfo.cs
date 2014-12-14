@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Assembly Discovery")]
+[assembly: AssemblyTitle("SampleProject.ClassLib01")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("V.P. Infoprogress")]
-[assembly: AssemblyProduct("Assembly Discovery")]
-[assembly: AssemblyCopyright("Copyright © V.P. Infoprogress")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("SampleProject.ClassLib01")]
+[assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a2e1be91-eb6b-441e-a4a1-2be7dc080e6d")]
+[assembly: Guid("170611dd-e306-4f63-9468-43cda6c8a936")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -34,18 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-/*
-CommandLine Examples:
-"..\..\..\..\samples\SampleProject.ConsoleApp\bin\Debug\SampleProject.ConsoleApp.exe" -rve "SampleProject.ConsoleApp-val.xml"
-
-"..\..\..\..\samples\SampleProject.ConsoleApp\bin\Debug\SampleProject.ConsoleApp.exe" -v "SampleProject.ConsoleApp-val.xml"
-
-"..\..\..\..\samples\SampleProject.ConsoleApp\bin\Debug\SampleProject.ConsoleApp.exe" -o "SampleProject.ConsoleApp-rep.txt"
-
-"..\..\..\..\samples\SampleProject.ConsoleApp\bin\Debug\SampleProject.ConsoleApp.exe" -r -o:html "SampleProject.ConsoleApp-rep.html"
-
-"..\..\..\..\samples\SampleProject.ConsoleApp\bin\Debug\SampleProject.ConsoleApp.exe" -o:html "SampleProject.ConsoleApp-rep.html"
-
-"..\..\..\..\samples\SampleProject.ConsoleApp\bin\Debug\SampleProject.ConsoleApp.exe" -o:txt "SampleProject.ConsoleApp-rep.txt"
-*/

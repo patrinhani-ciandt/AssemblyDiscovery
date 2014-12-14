@@ -12,10 +12,10 @@ namespace AssemblyDiscovery.Services
     {
         public List<ValidatorDefinitionReference> References { get; set; }
 
-        private ConcurrentBag<Guid> errorReferences = new ConcurrentBag<Guid>();
-        private ConcurrentBag<Guid> warningReferences = new ConcurrentBag<Guid>();
+        private ConcurrentBag<AssemblyTO> errorReferences = new ConcurrentBag<AssemblyTO>();
+        private ConcurrentBag<AssemblyTO> warningReferences = new ConcurrentBag<AssemblyTO>();
 
-        public IEnumerable<Guid> ErrorReferences
+        public IEnumerable<AssemblyTO> ErrorReferences
         {
             get
             {
@@ -23,7 +23,7 @@ namespace AssemblyDiscovery.Services
             }
         }
 
-        public IEnumerable<Guid> WarningReferences
+        public IEnumerable<AssemblyTO> WarningReferences
         {
             get
             {
@@ -55,6 +55,24 @@ namespace AssemblyDiscovery.Services
             {
                 validateReference(item);
             }
+
+            checkRequiredReferences(assemblies);
+        }
+
+        private void checkRequiredReferences(IEnumerable<AssemblyTO> assemblies)
+        {
+            foreach (var refRule in References.Where(a => a.Required).AsParallel())
+            {
+                if (!assemblies.Any(a => a.Name == refRule.AssemblyName))
+                {
+                    setValidationResult(refRule.ErrorType, new AssemblyTO
+                    {
+                        ObjectId = Guid.Empty,
+                        Name = refRule.AssemblyName,
+                        AssemblyVersion = new Version(0,0,0,0)
+                    });
+                }
+            }
         }
 
         private void validateReference(AssemblyTO assembly)
@@ -65,16 +83,21 @@ namespace AssemblyDiscovery.Services
 
                 if ((isValid.HasValue) && (!isValid.Value))
                 {
-                    switch (item.ErrorType)
-                    {
-                        case ValidatorDefinitionReferenceErrorType.Warning:
-                            warningReferences.Add(assembly.ObjectId);
-                            break;
-                        case ValidatorDefinitionReferenceErrorType.Error:
-                            errorReferences.Add(assembly.ObjectId);
-                            break;
-                    }
+                    setValidationResult(item.ErrorType, assembly);
                 }
+            }
+        }
+
+        private void setValidationResult(ValidatorDefinitionReferenceErrorType errorType, AssemblyTO refAssembly)
+        {
+            switch (errorType)
+            {
+                case ValidatorDefinitionReferenceErrorType.Warning:
+                    warningReferences.Add(refAssembly);
+                    break;
+                case ValidatorDefinitionReferenceErrorType.Error:
+                    errorReferences.Add(refAssembly);
+                    break;
             }
         }
 
@@ -96,6 +119,8 @@ namespace AssemblyDiscovery.Services
         public string AssemblyName { get; set; }
         [XmlAttribute]
         public string Version { get; set; }
+        [XmlAttribute]
+        public bool Required { get; set; }
         [XmlAttribute]
         public bool Allowed { get; set; }
         [XmlAttribute]
@@ -119,7 +144,7 @@ namespace AssemblyDiscovery.Services
 
             var res = false;
 
-            if (Allowed)
+            if (Allowed || Required)
                 res = (isVersionMatch);
             else
                 res = (isVersionMatch == false);
@@ -136,7 +161,7 @@ namespace AssemblyDiscovery.Services
         {
             var targetAssemblyVersion = new Version(assemblyVersion.ToString());
 
-            string regexVersion = @"(?<comp>((<=)|(>=)|(=)|(>)|(<)))?(?<version>((?<any_version>[*])|(?<spec_version>(\d+|(?<ver_cw_maj>[*]))[.](\d+|(?<ver_cw_min>[*]))[.](\d+|(?<ver_cw_build>[*]))[.](\d+|(?<ver_cw_rev>[*])))))?";
+            string regexVersion = @"(?<comp>(([-]=)|([+]=)|(=)|([-])|([+])))?(?<version>((?<any_version>[*])|(?<spec_version>(\d+|(?<ver_cw_maj>[*]))[.](\d+|(?<ver_cw_min>[*]))[.](\d+|(?<ver_cw_build>[*]))[.](\d+|(?<ver_cw_rev>[*])))))?";
 
             var matchVersion = Regex.Match(Version, regexVersion);
 
@@ -173,13 +198,13 @@ namespace AssemblyDiscovery.Services
             {
                 case "=":
                     return (targetAssemblyVersion == testVersion);
-                case ">":
-                    return (targetAssemblyVersion > testVersion);
-                case "<":
+                case "-":
                     return (targetAssemblyVersion < testVersion);
-                case "<=":
+                case "+":
+                    return (targetAssemblyVersion > testVersion);
+                case "-=":
                     return (targetAssemblyVersion <= testVersion);
-                case ">=":
+                case "+=":
                     return (targetAssemblyVersion >= testVersion);
             }
 
