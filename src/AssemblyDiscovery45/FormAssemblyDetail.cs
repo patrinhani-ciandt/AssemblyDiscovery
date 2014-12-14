@@ -30,7 +30,7 @@ namespace AssemblyDiscovery
 
         #region Métodos Estaticos
 
-        public static new void Show(AssemblyTO assembly)
+        public static void Show(AssemblyTO assembly)
         {
             FormAssemblyDetail form = new FormAssemblyDetail(assembly);
 
