@@ -16,7 +16,7 @@ namespace AssemblyDiscovery
 
         #region Properties
 
-        public Guid ObjectId { get; private set; }
+        public Guid ObjectId { get; internal set; }
 
         public string Name { get; set; }
 

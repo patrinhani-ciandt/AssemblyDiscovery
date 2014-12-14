@@ -8,6 +8,7 @@ namespace AssemblyDiscovery.Services
     {
         public IEnumerable<AssemblyTO> Errors { get; set; }
         public IEnumerable<AssemblyTO> Warnings { get; set; }
+        public IEnumerable<AssemblyTO> NotFound { get; set; }
 
         public bool HasWarnings()
         {
@@ -17,6 +18,11 @@ namespace AssemblyDiscovery.Services
         public bool HasErrors()
         {
             return ((Errors != null) && (Errors.Count() > 0));
+        }
+
+        public bool HasNotFound()
+        {
+            return ((NotFound != null) && (NotFound.Count() > 0));
         }
     }
 }
